@@ -1,5 +1,5 @@
+using Assets.Scripts;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,7 +27,7 @@ public class HADSScoring : MonoBehaviour
         string anxietyStatus = GetStatus(anxietyScore) + (anxietyScore > 7 ? " тривога" : "");
         string depressionStatus = GetStatus(depressionScore) + (depressionScore > 7 ? " депресія" : "");
 
-        string results = $"Тривожність:\n {anxietyStatus}\nДепресія:\n {depressionStatus}";
+        string results = $"Тривожність:\n {anxietyStatus}\n\nДепресія:\n {depressionStatus}";
 
         TestManager.currentTestPanel = HadsPanel; // Set the HADS panel as current
         SaveHADSResult(anxietyScore, depressionScore);
@@ -60,44 +60,15 @@ public class HADSScoring : MonoBehaviour
 
     private void SaveHADSResult(int anxietyScore, int depressionScore)
     {
-        try
-        {
-            HADSResult testResult = new HADSResult(DateTime.Now, 8, 9);
-            string json1 = JsonUtility.ToJson(testResult);
-            Debug.Log(json1);
+        string existingResults = PlayerPrefs.GetString("HADSResults");
 
-            // Load existing HADS results
-            List<HADSResult> results = new()
-            {
-                new HADSResult(DateTime.Now, anxietyScore, depressionScore)
-            };
+        HADSResultsWrapper wrapper = JsonUtility.FromJson<HADSResultsWrapper>(existingResults);
+        wrapper.Results.Add(new HADSResult(DateTime.Now, anxietyScore, depressionScore));
+        Debug.Log(wrapper.Results.Count);
 
-            Debug.Log(results.ToString() + DateTime.Now + anxietyScore.ToString() + depressionScore.ToString());
+        string newResults = JsonUtility.ToJson(wrapper);
 
-            string json = JsonUtility.ToJson(results);
-            Debug.Log(json);
-
-            // 2. Save the JSON string to PlayerPrefs with the key "HADSResults"
-            PlayerPrefs.SetString("HADSResults", json);
-            PlayerPrefs.Save();
-            Debug.Log("HADS results saved successfully!");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError("Error saving HADS results: " + ex.Message);
-        }
-    }
-}
-
-[Serializable]
-public class HADSResult : TestResult
-{
-    public int AnxietyScore;
-    public int DepressionScore;
-
-    public HADSResult(DateTime date, int anxietyScore, int depressionScore) : base(date)
-    {
-        this.AnxietyScore = anxietyScore;
-        this.DepressionScore = depressionScore;
+        PlayerPrefs.SetString("HADSResults", newResults);
+        PlayerPrefs.Save();
     }
 }

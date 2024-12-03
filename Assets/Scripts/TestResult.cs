@@ -3,10 +3,10 @@ using System;
 [Serializable]
 public class TestResult
 {
-    public DateTime Date;
+    public string Date;
 
     public TestResult(DateTime date)
     {
-        this.Date = date;
+        this.Date = date.ToShortDateString();
     }
 }
